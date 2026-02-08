@@ -160,9 +160,14 @@ export async function createTask(userId: number, title: string, description?: st
   return db.insert(tasks).values({ userId, title, description, status: status as any, dueDate, priority: priority as any });
 }
 
-export async function updateTask(id: number, userId: number, updates: any) {
+export async function updateTask(id: number, userId: number, title?: string, description?: string, status?: string, priority?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  const updates: any = {};
+  if (title !== undefined) updates.title = title;
+  if (description !== undefined) updates.description = description;
+  if (status !== undefined) updates.status = status;
+  if (priority !== undefined) updates.priority = priority;
   return db.update(tasks).set(updates).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 }
 
@@ -197,4 +202,77 @@ export async function createLoreNote(userId: number, title: string, content?: st
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db.insert(loreNotes).values({ userId, title, content, category });
+}
+
+// Additional CRUD operations
+export async function updateSocialMediaLink(id: number, userId: number, platform: string, url: string, username?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(socialMediaLinks).set({ platform, url, username }).where(and(eq(socialMediaLinks.id, id), eq(socialMediaLinks.userId, userId)));
+}
+
+export async function updateCalendarEvent(id: number, userId: number, title: string, startDate: Date, description?: string, status?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(calendarEvents).set({ title, startDate, description, status: status as any }).where(and(eq(calendarEvents.id, id), eq(calendarEvents.userId, userId)));
+}
+
+export async function deleteCalendarEvent(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(calendarEvents).where(and(eq(calendarEvents.id, id), eq(calendarEvents.userId, userId)));
+}
+
+export async function updateContentIdea(id: number, userId: number, title: string, description?: string, status?: string, priority?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(contentIdeas).set({ title, description, status: status as any, priority: priority as any }).where(and(eq(contentIdeas.id, id), eq(contentIdeas.userId, userId)));
+}
+
+export async function deleteContentIdea(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(contentIdeas).where(and(eq(contentIdeas.id, id), eq(contentIdeas.userId, userId)));
+}
+
+export async function deleteAsset(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(assets).where(and(eq(assets.id, id), eq(assets.userId, userId)));
+}
+
+export async function deleteTask(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+}
+
+export async function deleteApiKey(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(apiKeys).where(and(eq(apiKeys.id, id), eq(apiKeys.userId, userId)));
+}
+
+export async function createTemplate(userId: number, name: string, content: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(templates).values({ userId, name, content });
+}
+
+export async function deleteTemplate(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(templates).where(and(eq(templates.id, id), eq(templates.userId, userId)));
+}
+
+export async function updateLoreNote(id: number, userId: number, title: string, content?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(loreNotes).set({ title, content }).where(and(eq(loreNotes.id, id), eq(loreNotes.userId, userId)));
+}
+
+export async function deleteLoreNote(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(loreNotes).where(and(eq(loreNotes.id, id), eq(loreNotes.userId, userId)));
 }

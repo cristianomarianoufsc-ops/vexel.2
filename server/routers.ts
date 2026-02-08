@@ -1,4 +1,4 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME } from "../shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
@@ -32,6 +32,16 @@ export const appRouter = router({
       .mutation(({ ctx, input }) =>
         db.createSocialMediaLink(ctx.user.id, input.platform, input.url, input.username)
       ),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        platform: z.string(),
+        url: z.string().url(),
+        username: z.string().optional(),
+      }))
+      .mutation(({ ctx, input }) =>
+        db.updateSocialMediaLink(input.id, ctx.user.id, input.platform, input.url, input.username)
+      ),
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(({ ctx, input }) =>
@@ -62,6 +72,22 @@ export const appRouter = router({
           input.status
         )
       ),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string(),
+        startDate: z.date(),
+        description: z.string().optional(),
+        status: z.enum(["planned", "scheduled", "completed", "cancelled"]).optional(),
+      }))
+      .mutation(({ ctx, input }) =>
+        db.updateCalendarEvent(input.id, ctx.user.id, input.title, input.startDate, input.description, input.status)
+      ),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(({ ctx, input }) =>
+        db.deleteCalendarEvent(input.id, ctx.user.id)
+      ),
   }),
 
   // Content Ideas
@@ -87,6 +113,22 @@ export const appRouter = router({
           input.priority
         )
       ),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string(),
+        description: z.string().optional(),
+        status: z.enum(["idea", "in_progress", "completed", "archived"]).optional(),
+        priority: z.enum(["low", "medium", "high"]).optional(),
+      }))
+      .mutation(({ ctx, input }) =>
+        db.updateContentIdea(input.id, ctx.user.id, input.title, input.description, input.status, input.priority)
+      ),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(({ ctx, input }) =>
+        db.deleteContentIdea(input.id, ctx.user.id)
+      ),
   }),
 
   // Assets
@@ -96,23 +138,22 @@ export const appRouter = router({
     ),
     create: protectedProcedure
       .input(z.object({
-        name: z.string(),
+        filename: z.string(),
         fileUrl: z.string().url(),
         fileType: z.string().optional(),
-        fileSize: z.number().optional(),
-        category: z.string().optional(),
-        tags: z.string().optional(),
       }))
       .mutation(({ ctx, input }) =>
         db.createAsset(
           ctx.user.id,
-          input.name,
+          input.filename,
           input.fileUrl,
-          input.fileType,
-          input.fileSize,
-          input.category,
-          input.tags
+          input.fileType
         )
+      ),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(({ ctx, input }) =>
+        db.deleteAsset(input.id, ctx.user.id)
       ),
   }),
 
@@ -142,10 +183,26 @@ export const appRouter = router({
     update: protectedProcedure
       .input(z.object({
         id: z.number(),
+        title: z.string(),
+        description: z.string().optional(),
         status: z.enum(["pending", "in_progress", "completed"]).optional(),
+        priority: z.enum(["low", "medium", "high"]).optional(),
       }))
       .mutation(({ ctx, input }) =>
-        db.updateTask(input.id, ctx.user.id, { status: input.status })
+        db.updateTask(input.id, ctx.user.id, input.title, input.description, input.status, input.priority)
+      ),
+    toggle: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["pending", "in_progress", "completed"]),
+      }))
+      .mutation(({ ctx, input }) =>
+        db.updateTask(input.id, ctx.user.id, undefined, undefined, input.status)
+      ),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(({ ctx, input }) =>
+        db.deleteTask(input.id, ctx.user.id)
       ),
   }),
 
@@ -157,10 +214,15 @@ export const appRouter = router({
     create: protectedProcedure
       .input(z.object({
         name: z.string(),
-        keyHash: z.string(),
+        key: z.string(),
       }))
       .mutation(({ ctx, input }) =>
-        db.createApiKey(ctx.user.id, input.name, input.keyHash)
+        db.createApiKey(ctx.user.id, input.name, input.key)
+      ),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(({ ctx, input }) =>
+        db.deleteApiKey(input.id, ctx.user.id)
       ),
   }),
 
@@ -169,6 +231,19 @@ export const appRouter = router({
     list: protectedProcedure.query(({ ctx }) =>
       db.getTemplates(ctx.user.id)
     ),
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        content: z.string(),
+      }))
+      .mutation(({ ctx, input }) =>
+        db.createTemplate(ctx.user.id, input.name, input.content)
+      ),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(({ ctx, input }) =>
+        db.deleteTemplate(input.id, ctx.user.id)
+      ),
   }),
 
   // Lore Notes
@@ -184,6 +259,20 @@ export const appRouter = router({
       }))
       .mutation(({ ctx, input }) =>
         db.createLoreNote(ctx.user.id, input.title, input.content, input.category)
+      ),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string(),
+        content: z.string().optional(),
+      }))
+      .mutation(({ ctx, input }) =>
+        db.updateLoreNote(input.id, ctx.user.id, input.title, input.content)
+      ),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(({ ctx, input }) =>
+        db.deleteLoreNote(input.id, ctx.user.id)
       ),
   }),
 
@@ -212,3 +301,4 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+

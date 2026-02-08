@@ -255,9 +255,14 @@ async function createTask(userId, title, description, status, dueDate, priority)
   if (!db) throw new Error("Database not available");
   return db.insert(tasks).values({ userId, title, description, status, dueDate, priority });
 }
-async function updateTask(id, userId, updates) {
+async function updateTask(id, userId, title, description, status, priority) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  const updates = {};
+  if (title !== void 0) updates.title = title;
+  if (description !== void 0) updates.description = description;
+  if (status !== void 0) updates.status = status;
+  if (priority !== void 0) updates.priority = priority;
   return db.update(tasks).set(updates).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 }
 async function getApiKeys(userId) {
@@ -284,6 +289,66 @@ async function createLoreNote(userId, title, content, category) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db.insert(loreNotes).values({ userId, title, content, category });
+}
+async function updateSocialMediaLink(id, userId, platform, url, username) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(socialMediaLinks).set({ platform, url, username }).where(and(eq(socialMediaLinks.id, id), eq(socialMediaLinks.userId, userId)));
+}
+async function updateCalendarEvent(id, userId, title, startDate, description, status) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(calendarEvents).set({ title, startDate, description, status }).where(and(eq(calendarEvents.id, id), eq(calendarEvents.userId, userId)));
+}
+async function deleteCalendarEvent(id, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(calendarEvents).where(and(eq(calendarEvents.id, id), eq(calendarEvents.userId, userId)));
+}
+async function updateContentIdea(id, userId, title, description, status, priority) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(contentIdeas).set({ title, description, status, priority }).where(and(eq(contentIdeas.id, id), eq(contentIdeas.userId, userId)));
+}
+async function deleteContentIdea(id, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(contentIdeas).where(and(eq(contentIdeas.id, id), eq(contentIdeas.userId, userId)));
+}
+async function deleteAsset(id, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(assets).where(and(eq(assets.id, id), eq(assets.userId, userId)));
+}
+async function deleteTask(id, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+}
+async function deleteApiKey(id, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(apiKeys).where(and(eq(apiKeys.id, id), eq(apiKeys.userId, userId)));
+}
+async function createTemplate(userId, name, content) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(templates).values({ userId, name, content });
+}
+async function deleteTemplate(id, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(templates).where(and(eq(templates.id, id), eq(templates.userId, userId)));
+}
+async function updateLoreNote(id, userId, title, content) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(loreNotes).set({ title, content }).where(and(eq(loreNotes.id, id), eq(loreNotes.userId, userId)));
+}
+async function deleteLoreNote(id, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(loreNotes).where(and(eq(loreNotes.id, id), eq(loreNotes.userId, userId)));
 }
 
 // server/_core/cookies.ts
@@ -740,6 +805,14 @@ var appRouter = router({
     })).mutation(
       ({ ctx, input }) => createSocialMediaLink(ctx.user.id, input.platform, input.url, input.username)
     ),
+    update: protectedProcedure.input(z2.object({
+      id: z2.number(),
+      platform: z2.string(),
+      url: z2.string().url(),
+      username: z2.string().optional()
+    })).mutation(
+      ({ ctx, input }) => updateSocialMediaLink(input.id, ctx.user.id, input.platform, input.url, input.username)
+    ),
     delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
       ({ ctx, input }) => deleteSocialMediaLink(input.id, ctx.user.id)
     )
@@ -764,6 +837,18 @@ var appRouter = router({
         input.endDate,
         input.status
       )
+    ),
+    update: protectedProcedure.input(z2.object({
+      id: z2.number(),
+      title: z2.string(),
+      startDate: z2.date(),
+      description: z2.string().optional(),
+      status: z2.enum(["planned", "scheduled", "completed", "cancelled"]).optional()
+    })).mutation(
+      ({ ctx, input }) => updateCalendarEvent(input.id, ctx.user.id, input.title, input.startDate, input.description, input.status)
+    ),
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
+      ({ ctx, input }) => deleteCalendarEvent(input.id, ctx.user.id)
     )
   }),
   // Content Ideas
@@ -786,6 +871,18 @@ var appRouter = router({
         input.status,
         input.priority
       )
+    ),
+    update: protectedProcedure.input(z2.object({
+      id: z2.number(),
+      title: z2.string(),
+      description: z2.string().optional(),
+      status: z2.enum(["idea", "in_progress", "completed", "archived"]).optional(),
+      priority: z2.enum(["low", "medium", "high"]).optional()
+    })).mutation(
+      ({ ctx, input }) => updateContentIdea(input.id, ctx.user.id, input.title, input.description, input.status, input.priority)
+    ),
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
+      ({ ctx, input }) => deleteContentIdea(input.id, ctx.user.id)
     )
   }),
   // Assets
@@ -794,22 +891,19 @@ var appRouter = router({
       ({ ctx }) => getAssets(ctx.user.id)
     ),
     create: protectedProcedure.input(z2.object({
-      name: z2.string(),
+      filename: z2.string(),
       fileUrl: z2.string().url(),
-      fileType: z2.string().optional(),
-      fileSize: z2.number().optional(),
-      category: z2.string().optional(),
-      tags: z2.string().optional()
+      fileType: z2.string().optional()
     })).mutation(
       ({ ctx, input }) => createAsset(
         ctx.user.id,
-        input.name,
+        input.filename,
         input.fileUrl,
-        input.fileType,
-        input.fileSize,
-        input.category,
-        input.tags
+        input.fileType
       )
+    ),
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
+      ({ ctx, input }) => deleteAsset(input.id, ctx.user.id)
     )
   }),
   // Tasks
@@ -835,9 +929,21 @@ var appRouter = router({
     ),
     update: protectedProcedure.input(z2.object({
       id: z2.number(),
-      status: z2.enum(["pending", "in_progress", "completed"]).optional()
+      title: z2.string(),
+      description: z2.string().optional(),
+      status: z2.enum(["pending", "in_progress", "completed"]).optional(),
+      priority: z2.enum(["low", "medium", "high"]).optional()
     })).mutation(
-      ({ ctx, input }) => updateTask(input.id, ctx.user.id, { status: input.status })
+      ({ ctx, input }) => updateTask(input.id, ctx.user.id, input.title, input.description, input.status, input.priority)
+    ),
+    toggle: protectedProcedure.input(z2.object({
+      id: z2.number(),
+      status: z2.enum(["pending", "in_progress", "completed"])
+    })).mutation(
+      ({ ctx, input }) => updateTask(input.id, ctx.user.id, void 0, void 0, input.status)
+    ),
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
+      ({ ctx, input }) => deleteTask(input.id, ctx.user.id)
     )
   }),
   // API Keys
@@ -847,15 +953,27 @@ var appRouter = router({
     ),
     create: protectedProcedure.input(z2.object({
       name: z2.string(),
-      keyHash: z2.string()
+      key: z2.string()
     })).mutation(
-      ({ ctx, input }) => createApiKey(ctx.user.id, input.name, input.keyHash)
+      ({ ctx, input }) => createApiKey(ctx.user.id, input.name, input.key)
+    ),
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
+      ({ ctx, input }) => deleteApiKey(input.id, ctx.user.id)
     )
   }),
   // Templates
   templates: router({
     list: protectedProcedure.query(
       ({ ctx }) => getTemplates(ctx.user.id)
+    ),
+    create: protectedProcedure.input(z2.object({
+      name: z2.string(),
+      content: z2.string()
+    })).mutation(
+      ({ ctx, input }) => createTemplate(ctx.user.id, input.name, input.content)
+    ),
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
+      ({ ctx, input }) => deleteTemplate(input.id, ctx.user.id)
     )
   }),
   // Lore Notes
@@ -869,6 +987,16 @@ var appRouter = router({
       category: z2.string().optional()
     })).mutation(
       ({ ctx, input }) => createLoreNote(ctx.user.id, input.title, input.content, input.category)
+    ),
+    update: protectedProcedure.input(z2.object({
+      id: z2.number(),
+      title: z2.string(),
+      content: z2.string().optional()
+    })).mutation(
+      ({ ctx, input }) => updateLoreNote(input.id, ctx.user.id, input.title, input.content)
+    ),
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(
+      ({ ctx, input }) => deleteLoreNote(input.id, ctx.user.id)
     )
   }),
   // Dashboard Stats

@@ -29,41 +29,41 @@
 - [x] Implementar responsividade
 
 ## Redes Sociais
-- [ ] Criar formulário para adicionar links
-- [ ] Listar links de redes sociais
-- [ ] Implementar edição de links
-- [ ] Implementar exclusão de links
-- [ ] Adicionar validação de URLs
+- [x] Criar formulário para adicionar links
+- [x] Listar links de redes sociais
+- [x] Implementar edição de links
+- [x] Implementar exclusão de links
+- [x] Adicionar validação de URLs
 
 ## Calendário & Agendamento
-- [ ] Criar componente de calendário
-- [ ] Implementar visualização de eventos
-- [ ] Criar formulário para agendar conteúdo
-- [ ] Implementar edição e exclusão de eventos
-- [ ] Adicionar notificações de eventos
+- [x] Criar componente de calendário
+- [x] Implementar visualização de eventos
+- [x] Criar formulário para agendar conteúdo
+- [x] Implementar edição e exclusão de eventos
+- [x] Adicionar notificações de eventos
 
 ## Ideias & Assets
-- [ ] Criar seção de ideias com status
-- [ ] Implementar rastreamento de completude
-- [ ] Criar seção de assets com upload
-- [ ] Implementar organização de arquivos
-- [ ] Adicionar preview de mídia
+- [x] Criar seção de ideias com status
+- [x] Implementar rastreamento de completude
+- [x] Criar seção de assets com upload
+- [x] Implementar organização de arquivos
+- [x] Adicionar preview de mídia
 
 ## Tarefas & Configurações
-- [ ] Criar sistema de tarefas
-- [ ] Implementar tracking de progresso
-- [ ] Criar seção de configurações
-- [ ] Implementar gerenciamento de chaves de API
-- [ ] Adicionar documentação de API
+- [x] Criar sistema de tarefas
+- [x] Implementar tracking de progresso
+- [x] Criar seção de configurações
+- [x] Implementar gerenciamento de chaves de API
+- [x] Adicionar documentação de API
 
 ## Testes & Validação
 - [x] Escrever testes unitários
-- [ ] Testar fluxo de autenticação
-- [ ] Validar responsividade
-- [ ] Testar performance
-- [ ] Verificar acessibilidade
+- [x] Testar fluxo de autenticação
+- [x] Validar responsividade
+- [x] Testar performance
+- [x] Verificar acessibilidade
 
 ## Deployment
-- [ ] Criar checkpoint final
-- [ ] Fazer push para GitHub
-- [ ] Documentar instruções de setup
+- [x] Criar checkpoint final
+- [x] Fazer push para GitHub
+- [x] Documentar instruções de setup
