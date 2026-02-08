@@ -123,7 +123,7 @@ var ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "https://auth.manus.im",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
@@ -758,6 +758,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // server/_core/systemRouter.ts
+import { sql } from "drizzle-orm";
 var systemRouter = router({
   health: publicProcedure.input(
     z.object({
@@ -776,6 +777,20 @@ var systemRouter = router({
     return {
       success: delivered
     };
+  }),
+  runMigration: adminProcedure.mutation(async () => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    try {
+      await db.execute(sql`
+          INSERT INTO socialMediaLinks (userId, platform, url, username, createdAt, updatedAt)
+          VALUES (1, 'YouTube', 'https://www.youtube.com/@bandavexel', 'bandavexel', NOW(), NOW())
+          ON DUPLICATE KEY UPDATE updatedAt = NOW();
+        `);
+      return { success: true, message: "Migration executed successfully" };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   })
 });
 
