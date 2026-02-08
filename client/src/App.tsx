@@ -14,6 +14,7 @@ import Tasks from "./pages/Tasks";
 import Settings from "./pages/Settings";
 import Lore from "./pages/Lore";
 import Templates from "./pages/Templates";
+import Migrate from "./pages/Migrate";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
       <Route path={"/settings"} component={Settings} />
       <Route path={"/lore"} component={Lore} />
       <Route path={"/templates"} component={Templates} />
+      <Route path={"/migrate"} component={Migrate} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
