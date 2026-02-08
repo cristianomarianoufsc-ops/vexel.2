@@ -10,6 +10,7 @@ export default function SocialMedia() {
   const createMutation = trpc.socialMedia.create.useMutation();
   const updateMutation = trpc.socialMedia.update.useMutation();
   const deleteMutation = trpc.socialMedia.delete.useMutation();
+  const migrateMutation = trpc.system.runMigration.useMutation();
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -77,6 +78,20 @@ export default function SocialMedia() {
     setUsername("");
   };
 
+  const handleMigrate = async () => {
+    try {
+      const result = await migrateMutation.mutateAsync();
+      if (result.success) {
+        toast.success(result.message);
+        refetch();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error: any) {
+      toast.error("Erro ao executar migração: " + error.message);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="p-8 space-y-8">
@@ -85,9 +100,14 @@ export default function SocialMedia() {
             <h1 className="text-4xl font-bold text-gradient retro-text mb-2">[REDES SOCIAIS]</h1>
             <p className="text-muted-foreground">Gerenciar links de plataformas</p>
           </div>
-          <Button onClick={() => setShowForm(!showForm)} className="btn-cyberpunk">
-            <Plus className="w-4 h-4 mr-2" /> Adicionar Link
-          </Button>
+          <div className="flex gap-4">
+            <Button onClick={handleMigrate} className="btn-cyberpunk-outline" disabled={migrateMutation.isPending}>
+              {migrateMutation.isPending ? "Migrando..." : "Sincronizar YouTube"}
+            </Button>
+            <Button onClick={() => setShowForm(!showForm)} className="btn-cyberpunk">
+              <Plus className="w-4 h-4 mr-2" /> Adicionar Link
+            </Button>
+          </div>
         </div>
 
         {showForm && (
